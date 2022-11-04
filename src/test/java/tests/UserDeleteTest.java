@@ -1,6 +1,9 @@
 package tests;
 
 import io.qameta.allure.Epic;
+import io.qameta.allure.Severity;
+import io.qameta.allure.SeverityLevel;
+import io.qameta.allure.TmsLink;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import lib.Assertions;
@@ -18,6 +21,8 @@ class UserDeleteTest extends BaseTestCase {
     @Test
     @Epic("Удаление пользователей")
     @DisplayName("Удаление пользователя по ID 2")
+    @Severity(SeverityLevel.NORMAL)
+    @TmsLink("example.com")
     void testDeleteUser() {
 
         Response responseGetAuth = authRequest("vinkotov@example.com", "1234");
@@ -31,6 +36,8 @@ class UserDeleteTest extends BaseTestCase {
     @Test
     @Epic("Удаление пользователей")
     @DisplayName("Удаление созданного пользователя")
+    @Severity(SeverityLevel.NORMAL)
+    @TmsLink("example.com")
     void testDeleteCreatedUser() {
 
         Map<String, String> userData = DataGenerator.getRegistrationData();
@@ -54,6 +61,8 @@ class UserDeleteTest extends BaseTestCase {
     @Test
     @Epic("Удаление пользователей")
     @DisplayName("Удаление пользователя, авторизованным другим пользователем")
+    @Severity(SeverityLevel.NORMAL)
+    @TmsLink("example.com")
     void testDeleteAnotherUser() {
 
         Map<String, String> userData = DataGenerator.getRegistrationData();
