@@ -79,7 +79,6 @@ class UserEditTest extends BaseTestCase {
         Assertions.assertResponseTextEquals(responseEditUser,
                 "Invalid email format");
 
-
         Response userDataResponse = getUserDataRequest(
                 this.getHeader(responseGetAuth, "x-csrf-token"),
                 this.getCookie(responseGetAuth, "auth_sid"),

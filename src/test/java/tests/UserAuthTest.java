@@ -69,7 +69,6 @@ public class UserAuthTest extends BaseTestCase {
             throw new IllegalArgumentException("Condition value is known: " + condition);
         }
 
-
         Response responseForCheck = spec.get().andReturn();
         Assertions.assertJsonByName(responseForCheck, "user_id", String.valueOf(0));
 

@@ -27,7 +27,6 @@ public class Assertions {
                 "Response status code is not as expected");
     }
 
-
     public static void assertJsonHasField(Response response, String expectedFieldName) {
         response.then().assertThat().body("$", hasKey(expectedFieldName));
     }
