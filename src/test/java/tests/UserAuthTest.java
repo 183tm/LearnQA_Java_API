@@ -50,7 +50,7 @@ public class UserAuthTest extends BaseTestCase {
                 .get("https://playground.learnqa.ru/api/user/auth")
                 .andReturn();
 
-        Assertions.asserJsonByName(responseCheckAuth, "user_id", this.userIdOnAuth);
+        Assertions.assertJsonByName(responseCheckAuth, "user_id", String.valueOf(this.userIdOnAuth));
     }
 
     @ParameterizedTest
@@ -70,7 +70,7 @@ public class UserAuthTest extends BaseTestCase {
         }
 
         Response responseForCheck = spec.get().andReturn();
-        Assertions.asserJsonByName(responseForCheck, "user_id", 0);
+        Assertions.assertJsonByName(responseForCheck, "user_id", String.valueOf(0));
 
     }
 

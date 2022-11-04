@@ -1,61 +1,101 @@
 package tests;
 
 import io.qameta.allure.Epic;
-import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import lib.ApiCoreRequests;
 import lib.Assertions;
 import lib.BaseTestCase;
+import lib.DataGenerator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.HashMap;
 import java.util.Map;
 
-@DisplayName("Получение данных пользователя")
-class UserGetTest extends BaseTestCase {
-
+@DisplayName("Регистрация пользователя")
+class UserRegisterTest extends BaseTestCase {
     private final ApiCoreRequests apiCoreRequests = new ApiCoreRequests();
 
     @Test
-    @Epic("Получение данных")
-    @DisplayName("Получение данных неавторизованным пользователем")
-    void testGetUserDataNotAuth() {
-        Response responseUserData = RestAssured
-                .get("https://playground.learnqa.ru/api/user/2")
-                .andReturn();
+    @Epic("Регистрация")
+    @DisplayName("Создание пользователя с некорректным email(отсутствует @)")
+    void testCreateUserWithIncorrectEmail() {
 
-        String[] unexpectedFieldNames = {"firstName", "lastName", "email"};
-        Assertions.assertJsonHasField(responseUserData, "username");
-        Assertions.assertJsonHasNotFields(responseUserData, unexpectedFieldNames);
+        String email = "example.test.com";
+        Map<String, String> userData = new HashMap<>();
+        userData.put("email", email);
+        userData = DataGenerator.getRegistrationData(userData);
+
+        Response responseCreateAuth = apiCoreRequests.makePostRequest(
+                "https://playground.learnqa.ru/api/user",
+                userData);
+
+        Assertions.assertResponseCodeEquals(responseCreateAuth, 400);
+        Assertions.assertResponseTextEquals(responseCreateAuth, "Invalid email format");
+    }
+
+
+    @ParameterizedTest
+    @Epic("Регистрация")
+    @ValueSource(strings = {"username", "email", "password", "firstName", "lastName"})
+    @DisplayName("Создание пользователя без указания одного из полей")
+    void testCreateUserWithoutOneOfParameters(String condition) {
+
+        Map<String, String> userData = new HashMap<>();
+        userData = DataGenerator.getRegistrationData(userData);
+
+        if (condition.equals("username") || condition.equals("email") ||
+                condition.equals("password") || condition.equals("firstName") ||
+                condition.equals("lastName")) {
+            userData.remove(condition);
+        } else {
+            throw new IllegalArgumentException("Condition value is unknown: " + condition);
+        }
+
+        Response responseCreateAuth = apiCoreRequests.makePostRequest(
+                "https://playground.learnqa.ru/api/user",
+                userData);
+
+        Assertions.assertResponseCodeEquals(responseCreateAuth, 400);
+        Assertions.assertResponseTextEquals(responseCreateAuth, "The following required params are missed: " + condition);
     }
 
     @Test
-    @Epic("Получение данных")
-    @DisplayName("Получение данных другого пользователя авторизованным пользователем")
-    void testGetUserDataAuthAsSomeUser() {
+    @Epic("Регистрация")
+    @DisplayName("Создание пользователя с очень коротким именем в один символ")
+    void testCreateUserWithOneSymbolName() {
 
-        Map<String, String> authData = new HashMap<>();
-        authData.put("email", "vinkotov@example.com");
-        authData.put("password", "1234");
-        Response responseGetAuth = apiCoreRequests
-                .makePostRequest("https://playground.learnqa.ru/api/user/login", authData);
+        String username = "A";
+        Map<String, String> userData = new HashMap<>();
+        userData.put("username", username);
+        userData = DataGenerator.getRegistrationData(userData);
 
-        String cookie = this.getCookie(responseGetAuth, "auth_sid");
-        String header = this.getHeader(responseGetAuth, "x-csrf-token");
+        Response responseCreateAuth = apiCoreRequests.makePostRequest(
+                "https://playground.learnqa.ru/api/user",
+                userData);
 
-        Response responseUserData = RestAssured
-                .given()
-                .log().all()
-                .header("x-csrf-token", header)
-                .cookie("auth_sid", cookie)
-                .when()
-                .get("https://playground.learnqa.ru/api/user/1")
-                .andReturn();
+        Assertions.assertResponseCodeEquals(responseCreateAuth, 400);
+        Assertions.assertResponseTextEquals(responseCreateAuth, "The value of 'username' field is too short");
+    }
 
-        responseUserData.prettyPrint();
-        String[] expectedFieldNames = {"username"};
-        Assertions.assertJsonHasFields(responseUserData, expectedFieldNames);
+    @Test
+    @Epic("Регистрация")
+    @DisplayName("Создание пользователя с очень длинным именем - длиннее 250 символов")
+    void testCreateUserWithVeryLongName() {
+
+        String username = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+        Map<String, String> userData = new HashMap<>();
+        userData.put("username", username);
+        userData = DataGenerator.getRegistrationData(userData);
+
+        Response responseCreateAuth = apiCoreRequests.makePostRequest(
+                "https://playground.learnqa.ru/api/user",
+                userData);
+
+        Assertions.assertResponseCodeEquals(responseCreateAuth, 400);
+        Assertions.assertResponseTextEquals(responseCreateAuth, "The value of 'username' field is too long");
     }
 
 }
