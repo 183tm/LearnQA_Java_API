@@ -41,6 +41,7 @@ import static io.restassured.RestAssured.given;
                     .andReturn();
         }
 
+
         @Step("Make a POST-request with token only")
         public Response makePostRequest(String url, Map<String, String> authData){
             return given()
